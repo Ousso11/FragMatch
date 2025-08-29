@@ -1,0 +1,9 @@
+torch
+torchvision
+transformers
+tqdm
+spacy
+pandas
+numpy
+Pillow
+clip-benchmark
