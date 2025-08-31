@@ -112,14 +112,13 @@ class ImageCropper:
 
         # Process the original images to get both full images and original tensors for cropping
         transformed_images = torch.stack([self.transform(img.convert("RGB")) for img in images])
-        original_tensors = torch.stack([T.ToTensor()(img.convert("RGB")) for img in images])
         
-        _, C, H_orig, W_orig = original_tensors.shape
+        _, C, H_orig, W_orig = transformed_images.shape
         crop_h = H_orig // self.grid_size
         crop_w = W_orig // self.grid_size
 
         # Use F.unfold on the entire batch of original tensors
-        patches = F.unfold(original_tensors, kernel_size=(crop_h, crop_w), stride=(crop_h, crop_w))
+        patches = F.unfold(transformed_images, kernel_size=(crop_h, crop_w), stride=(crop_h, crop_w))
 
         # Reshape the patches and merge the batch and patch dimensions for processing
         num_patches = self.grid_size * self.grid_size

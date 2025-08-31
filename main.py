@@ -2,7 +2,7 @@ import torch
 from dataclasses import dataclass
 from evaluator import CLIPBenchmarker
 from similarity import MeanMeanSimilarity, MaxMeanSimilarity
-from datasets import FlickrDataset, COCODataset
+from dataset_loader import FlickrDataset, COCODataset
 import argparse
 get_device = lambda : "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
 

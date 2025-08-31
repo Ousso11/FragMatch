@@ -7,3 +7,5 @@ pandas
 numpy
 Pillow
 clip-benchmark
+datasets==3.6.0
+huggingface-hub==0.34.4

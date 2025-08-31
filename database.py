@@ -2,10 +2,9 @@ import pickle
 import torch
 from torch.utils.data import Dataset, DataLoader
 from tqdm import tqdm
-import hashlib
 from pathlib import Path
 from clip import CLIPModelWrapper
-from datasets import custom_collate_fn
+from dataset_loader import custom_collate_fn
 from fragmentation import TextSplitter, ImageCropper
 from torch.nn.utils.rnn import pad_sequence
 
@@ -48,6 +47,7 @@ class EmbeddingDatabase:
 
         for batch in tqdm(dataloader, desc="Processing batches"):
             crops = self.image_cropper.crop_images(batch["images"])
+            exit(   )
             chunks = self.text_splitter.split_text(batch["captions"])
             embeddings = self.embedding_model.batch_encode_image_text_pairs(crops, chunks)
             self.image_embeddings.extend(embeddings["image_embedding"])
