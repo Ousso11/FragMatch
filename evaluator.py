@@ -18,9 +18,9 @@ class CLIPBenchmarker:
         """Load and process a dataset."""
         print(f"Loading {dataset_name} dataset...")
 
-        dataset = dataset_class(data_dir=self.config.data_dir, split=self.config.split, download=True)
+        dataset = dataset_class(config=self.config)
         database = EmbeddingDatabase(dataset, self.embedding_model, config=self.config)
-        database.chunk_and_crop_and_embed(batch_size=8)
+        database.chunk_and_crop_and_embed()
         
         self.databases[dataset_name] = database
         print(f"Loaded {dataset_name} with {len(database.metadata)} samples")
@@ -36,7 +36,8 @@ class CLIPBenchmarker:
             print(f"Testing {sim_class.name} similarity...")
 
             similarities = sim_class.compute_similarity(database.image_embeddings, database.text_embeddings)
-            ranker = Ranking(similarities, database.texts_image_index)
+            ranker = Ranking(similarities, database.texts_image_index, 
+                             config=self.config)
             metrics = ranker.get_results()
             dataset_results[sim_class.name] = metrics
             

@@ -18,19 +18,16 @@ class TextSplitter:
             print("Warning: spaCy model not found. Using simple splitting.")
             self.nlp = None
 
-    def split_text(self, text: Union[List[str], str]
-                   ) -> List[List[str]]:
+    def split_text(self, image_texts: Union[List[str], List[List[str]]]
+                   ) -> List[List[List[str]]]:
         """Split text into meaningful chunks using multiple strategies."""
-        if isinstance(text, str):
-            text = [text]
-        if not text or all(not t.strip() for t in text):
-            return [[""]]
+        if isinstance(image_texts, str):
+            image_texts = [image_texts]
+        if not image_texts:
+            return [[[""]]]
         
         # Strategy 1: Sentence-based splitting with spaCy
-        if self.nlp:
-            chunks = [self._split_with_spacy(t) for t in text]
-        else:
-            chunks = [self._split_simple(t) for t in text]
+        chunks = [[self._split_with_spacy(t) for t in text] for text in image_texts]
 
         return chunks
 
@@ -57,24 +54,8 @@ class TextSplitter:
         if current_chunk:
             chunks.append(" ".join(current_chunk))
         
-        # If no good splits found, fallback to simple splitting
-        if not chunks or (len(chunks) == 1 and len(chunks[0].split()) > self.max_chunk_length):
-            return self._split_simple(text)
-        
         return chunks
     
-    def _split_simple(self, text: str) -> List[str]:
-        """Simple word-based splitting as fallback."""
-        words = text.split()
-        if len(words) <= self.max_chunk_length:
-            return [text]
-        
-        chunks = []
-        for i in range(0, len(words), self.max_chunk_length - self.overlap):
-            chunk_words = words[i:i + self.max_chunk_length]
-            chunks.append(" ".join(chunk_words))
-        
-        return chunks
 
 # ===== IMAGE CROPPING CLASS =====
 

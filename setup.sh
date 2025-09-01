@@ -30,3 +30,5 @@ else
   echo "❌ Error: Failed to install packages. Please check your requirements.txt file and try again."
 fi
 
+# Download the English spaCy model
+python -m spacy download en_core_web_sm

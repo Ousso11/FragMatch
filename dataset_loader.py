@@ -25,23 +25,22 @@ class FlickrDataset(Dataset):
     """
     
     def __init__(self, 
-                 data_dir: str, 
-                 split: str = "test",
-                 download: bool = True,
-                 transform=None):
+                 config):
         """
         Initialize Flickr30k dataset.
         
         Args:
-            data_dir: Root directory for dataset storage
+            config: Configuration object
             download: Whether to download the dataset if not present
             transform: Optional transform to apply to images
             split: Which split to use (train/val/test)
         """
-        self.data_dir = Path(data_dir)
-        self.transform = transform
-        self.split = split
-
+        self.data_dir = Path(config.data_dir)
+        self.transform = config.transform if hasattr(config, 'transform') else None
+        self.split = config.split if hasattr(config, 'split') else "test"
+        self.download = config.download if hasattr(config, 'download') else True
+        self.data_length = config.data_length if hasattr(config, 'data_length') else None
+        
         # Create directories
         self.data_dir.mkdir(parents=True, exist_ok=True)
         self.data_dirs = {
@@ -54,7 +53,7 @@ class FlickrDataset(Dataset):
             os.makedirs(data_dir / "images", exist_ok=True)
 
         # Download if needed
-        if download and not self._check_data_exists():
+        if self.download and not self._check_data_exists():
             self._download_data()
         
         # Load data
@@ -67,7 +66,7 @@ class FlickrDataset(Dataset):
             return False
         with open(json_path, 'r') as f:
             annotations = json.load(f)
-        image_paths = [item["image_path"] for item in annotations.values()]
+        image_paths = [item["image_path"] for item in annotations]
        
         if any(not os.path.exists(os.path.join(self.data_dir, img_path)) for img_path in image_paths):
             return False
@@ -82,7 +81,7 @@ class FlickrDataset(Dataset):
         dataset = load_dataset(HUB["flickr30k"], split="test")
         
         # Prepare annotations dictionary
-        annotations = {"train": {}, "val": {}, "test": {}}
+        annotations = {"train": [], "val": [], "test": []}
 
         print(f"Processing {len(dataset)} samples for {self.split} split...")
 
@@ -104,13 +103,13 @@ class FlickrDataset(Dataset):
                     continue
 
             # Prepare annotation entry
-            annotations[split][item['img_id']] = {
-                "image_id": item['img_id'],
+            annotations[split].append({
+                "image_id": int(item['img_id']),
                 "image_path": os.path.join(split, "images", filename),
                 "filename": filename,
                 "captions": item['caption'],  # List of 5 captions
-                "caption_ids": item['sentids']  # List of caption IDs
-            }
+                "caption_ids": [int(sentid) for sentid in item['sentids']]  # List of caption IDs
+            })
 
         for split in ["train", "val", "test"]:
             # Save annotations to JSON
@@ -129,16 +128,13 @@ class FlickrDataset(Dataset):
                                   f"Please run with download=True first.")
         
         with open(json_path, 'r') as f:
-            annotations = json.load(f)
-        
-        # Convert to list format for indexing
-        data = []
-        for image_id, item in annotations.items():
-            data.append(item)
+            data = json.load(f)
 
-        print(f"Loaded {len(data)} samples for {self.split} split")
+        if self.data_length is not None:
+            data = data[:self.data_length]
+
         return data
-    
+
     def __len__(self) -> int:
         return len(self.data)
     
