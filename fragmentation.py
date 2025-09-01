@@ -11,6 +11,8 @@ class TextSplitter:
     def __init__(self, config):
         self.max_chunk_length = config.max_chunks
         self.overlap = config.chunk_overlap
+        self.include_full_text = config.include_full_text
+
         # Load spacy for better text processing
         try:
             self.nlp = spacy.load("en_core_web_sm")
@@ -34,7 +36,7 @@ class TextSplitter:
     def _split_with_spacy(self, text: str) -> List[str]:
         """Split using spaCy for better linguistic understanding."""
         doc = self.nlp(text)
-        chunks = []
+        chunks = [text] if self.include_full_text else [] 
         current_chunk = []
         current_length = 0
         

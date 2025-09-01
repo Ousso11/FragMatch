@@ -1,7 +1,7 @@
 import torch
 from dataclasses import dataclass
 from evaluator import CLIPBenchmarker
-from similarity import MeanMeanSimilarity, MaxMeanSimilarity
+from similarity import GlobalCosineSimilarity, MeanMeanSimilarity, MaxMeanSimilarity
 from dataset_loader import FlickrDataset, COCODataset
 import argparse
 from typing import Tuple 
@@ -9,9 +9,10 @@ get_device = lambda : "cuda" if torch.cuda.is_available() else "mps" if torch.ba
 
 DATASETS = {
     "flickr30k": FlickrDataset,
-    "coco": COCODataset
+    # "coco": COCODataset
 }
 SIMILARITY_FUNCTIONS = {
+    "cosine": GlobalCosineSimilarity(),
     "mean": MeanMeanSimilarity(),
     "max": MaxMeanSimilarity()
 }
@@ -29,6 +30,7 @@ class Config:
     chunk_overlap: int = 0
     max_chunks: int = 10
     include_full_image: bool = True
+    include_full_text: bool = True
     grid_size: int = 3  # 3x3 grid for image cropping
     device: str = get_device()
     recall_k_list: Tuple[int] = (1, 5, 10)
